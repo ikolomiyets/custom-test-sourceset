@@ -1,0 +1,88 @@
+plugins {
+    id 'java'
+    id 'idea'
+}
+
+sourceCompatibility = compatibility
+targetCompatibility = compatibility
+
+group = projectGroup
+def env = System.getenv()
+def buildNumberStr = env['BUILD_NUMBER']
+def artifactVersion = baseVersion + (buildNumberStr != null ? "." + buildNumberStr : "-SNAPSHOT")
+version = artifactVersion
+
+repositories {
+    mavenCentral()
+}
+
+jar {
+    archiveBaseName.set(projectName)
+    archiveVersion.set(artifactVersion)
+    manifest {
+        attributes("Implementation-Title": projectGroup + ":" + projectName,
+                "Implementation-Version": jar.archiveVersion,
+                "Implementation-Vendor": projectVendor)
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
+
+sourceSets {
+    'integration-test' {
+        java {
+            compileClasspath += sourceSets.main.output // + test.output
+            runtimeClasspath += sourceSets.main.output // + test.output
+            srcDir file('src/integration-test/java')
+        }
+        resources.srcDir file('src/integration-test/resources')
+    }
+}
+
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntime.extendsFrom testRuntime
+}
+
+task 'integration-test'(type: Test) {
+    useJUnitPlatform()
+    description = 'Runs integration tests.'
+    group = 'verification'
+    testClassesDirs = sourceSets['integration-test'].output.classesDirs
+    classpath = sourceSets['integration-test'].runtimeClasspath
+}
+
+'integration-test' {
+    useJUnitPlatform()
+    group = 'verification'
+    testClassesDirs = sourceSets['integration-test'].output.classesDirs
+    classpath = sourceSets['integration-test'].runtimeClasspath
+    doFirst {
+        def args = [
+        ]
+        if (env['profile'] != null || System.properties['profile'] != null) {
+            args << '-Dprofile=' + (env['profile'] != null ? env['profile'] : System.properties['profile'])
+        }
+        jvmArgs = args
+    }
+}
+
+dependencies {
+    testImplementation('org.junit.jupiter:junit-jupiter-api:5.7.1')
+
+    testRuntimeOnly('org.junit.platform:junit-platform-launcher:1.7.1')
+    testRuntimeOnly('org.junit.platform:junit-platform-engine:1.7.1')
+    testRuntimeOnly('org.junit.platform:junit-platform-commons:1.7.1')
+    testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.7.1')
+
+    integrationTestRuntimeOnly ('org.junit.jupiter:junit-jupiter-engine:5.7.1')
+}
+
+idea {
+    module {
+        sourceDirs -= file('src/integration-test/java')
+        testSourceDirs += file('src/integration-test/java')
+    }
+}
