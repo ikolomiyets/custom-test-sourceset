@@ -31,13 +31,13 @@ test {
 }
 
 sourceSets {
-    'integration-test' {
+    integrationTest {
         java {
             compileClasspath += sourceSets.main.output // + test.output
             runtimeClasspath += sourceSets.main.output // + test.output
-            srcDir file('src/integration-test/java')
+            srcDir file('src/integrationTest/java')
         }
-        resources.srcDir file('src/integration-test/resources')
+        resources.srcDir file('src/integrationTest/resources')
     }
 }
 
@@ -46,19 +46,19 @@ configurations {
     integrationTestRuntime.extendsFrom testRuntime
 }
 
-task 'integration-test'(type: Test) {
+task integrationTest(type: Test) {
     useJUnitPlatform()
     description = 'Runs integration tests.'
     group = 'verification'
-    testClassesDirs = sourceSets['integration-test'].output.classesDirs
-    classpath = sourceSets['integration-test'].runtimeClasspath
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
 }
 
-'integration-test' {
+integrationTest {
     useJUnitPlatform()
     group = 'verification'
-    testClassesDirs = sourceSets['integration-test'].output.classesDirs
-    classpath = sourceSets['integration-test'].runtimeClasspath
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
     doFirst {
         def args = [
         ]
@@ -82,7 +82,7 @@ dependencies {
 
 idea {
     module {
-        sourceDirs -= file('src/integration-test/java')
-        testSourceDirs += file('src/integration-test/java')
+        sourceDirs -= file('src/integrationTest/java')
+        testSourceDirs += file('src/integrationTest/java')
     }
 }
